@@ -1,0 +1,11 @@
+<html>
+	<head>
+		<title>Tornado memcached Sessions!</title>
+	</head>
+	<body>
+		<form action="/login" method="post">
+			{% raw xsrf_form_html() %}
+			Name: <input type="text" name="name" />
+			<input type="submit" value="Sign in" />
+		</form>
+</body></html>
