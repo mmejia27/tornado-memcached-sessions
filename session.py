@@ -92,4 +92,3 @@ class SessionManager(object):
 
 class InvalidSessionException(Exception):
     pass
-
