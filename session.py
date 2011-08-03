@@ -32,19 +32,23 @@ class Session(SessionData):
         self.session_manager.set(self.request_handler, self)
         
 class SessionManager(object):
-    def __init__(self, secret, memcached_address):
+    def __init__(self, secret, memcached_address, session_timeout):
         self.secret = secret
         self.memcached_address = memcached_address
+        self.session_timeout = session_timeout
         
     def _fetch(self, session_id):
         try:
             mc = memcache.Client(self.memcached_address, debug=0)
-            data = pickle.loads(mc.get(session_id))
-            if type(data) == type({}):
-                return data
+            session_data = raw_data = mc.get(session_id)
+            if raw_data != None:
+                mc.replace(session_id, raw_data, self.session_timeout, 0)
+                session_data = pickle.loads(raw_data)
+            if type(session_data) == type({}):
+                return session_data
             else:
                 return {}
-        except pickle.UnpicklingError:
+        except IOError:
             return {}
         
     def get(self, request_handler = None):
@@ -81,7 +85,7 @@ class SessionManager(object):
         request_handler.set_secure_cookie("verification", session.hmac_key)
         session_data = pickle.dumps(dict(session.items()), pickle.HIGHEST_PROTOCOL)
         mc = memcache.Client(self.memcached_address, debug=0)
-        mc.set(session.session_id, session_data)
+        mc.set(session.session_id, session_data, self.session_timeout, 0)
         
     def _generate_id(self):
         new_id = hashlib.sha256(self.secret + str(uuid.uuid4()))
