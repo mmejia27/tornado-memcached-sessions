@@ -38,7 +38,6 @@ class MainHandler(BaseHandler):
 class LoginHandler(BaseHandler):
     def get(self):
         self.render("login.html")
-        self.write('')
     
     def post(self):
         self.session["user_name"] = self.get_argument("name")
